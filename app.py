@@ -13,14 +13,13 @@ from flask import Flask, render_template, request, redirect, url_for, session
 
 # Cargar configuración
 load_dotenv()
-dbconfig = {
-    "host": os.getenv("DB_HOST", "AndresL12.mysql.pythonanywhere-services.com"),
-    "user": os.getenv("DB_USER", "AndresL12"),
-    "password": os.getenv("DB_PASSWORD", "0151021102andy"),
-    "database": os.getenv("DB_NAME", "AndresL12$gafas_inteligentes"),
-    "cursorclass": pymysql.cursors.DictCursor,
-    "autocommit": True
-}
+conn = psycopg2.connect(
+  host     = os.getenv("DB_HOST"),
+  port     = os.getenv("DB_PORT"),
+  dbname   = os.getenv("DB_NAME"),
+  user     = os.getenv("DB_USER"),
+  password = os.getenv("DB_PASSWORD")
+)
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
