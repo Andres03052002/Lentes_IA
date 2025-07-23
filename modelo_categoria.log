@@ -1,0 +1,19 @@
+2025-07-16 12:17:10,514 - INFO - \U0001f680 Iniciando entrenamiento por categoría...
+2025-07-16 12:17:12,217 - INFO - \U0001f4ca Cross-Validation Accuracy: 0.3170
+2025-07-16 12:17:12,257 - INFO - \U0001f4ca Métricas guardadas.
+2025-07-16 12:17:12,312 - INFO - \U0001f4be Modelo de categoría y encoders guardados.
+2025-07-16 12:17:21,376 - INFO - \u2705 Entrenamiento por categoría finalizado.
+2025-07-16 15:50:03,865 - INFO - \U0001f680 Iniciando entrenamiento por categoría...
+2025-07-16 15:50:05,557 - INFO - \U0001f680 Iniciando entrenamiento por categoría...
+2025-07-16 15:50:10,749 - INFO - \U0001f4ca Cross-Validation Accuracy: 0.3170
+2025-07-16 15:50:10,873 - INFO - \U0001f4ca Métricas guardadas.
+2025-07-16 15:50:11,054 - INFO - \U0001f4be Modelo de categoría y encoders guardados.
+2025-07-16 15:50:11,528 - INFO - \U0001f4ca Cross-Validation Accuracy: 0.3170
+2025-07-16 15:50:11,659 - INFO - \U0001f4ca Métricas guardadas.
+2025-07-16 15:50:11,850 - INFO - \U0001f4be Modelo de categoría y encoders guardados.
+2025-07-17 21:11:54,085 - INFO - \U0001f680 Iniciando entrenamiento por categoría...
+2025-07-17 21:12:32,810 - INFO - \U0001f680 Iniciando entrenamiento por categoría...
+2025-07-17 21:12:34,335 - INFO - \U0001f4ca Cross-Validation Accuracy: 0.3130
+2025-07-17 21:12:34,367 - INFO - \U0001f4ca Métricas guardadas.
+2025-07-17 21:12:34,405 - INFO - \U0001f4be Modelo de categoría y encoders guardados.
+2025-07-17 21:12:45,147 - INFO - \u2705 Entrenamiento por categoría finalizado.

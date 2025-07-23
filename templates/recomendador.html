@@ -1,0 +1,144 @@
+<!-- recomendador.html MEJORADO CON ANIMACIÓN EN SELECTORES -->
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Asesor IA de Lentes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Swiper.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <!-- Jeeliz VTO Widget -->
+  <script src="{{ url_for('static', filename='dist/JeelizVTOWidget.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/JeelizVTOWidget.css') }}">
+
+  <!-- MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4/camera_utils.js"></script>
+
+  <!-- Script principal -->
+  <script defer src="{{ url_for('static', filename='js/recomendador.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <style>
+    select {
+      transition: all 0.3s ease;
+      transform-origin: top center;
+    }
+    select:focus {
+      transform: scale(1.03);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+    }
+  </style>
+</head>
+
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans">
+
+<a href="/" class="fixed top-4 left-4 z-50 p-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm transition-all group">
+  <img src="{{ url_for('static', filename='img/home-icon.jpg') }}" 
+       alt="Inicio" 
+       class="w-6 h-6 object-contain group-hover:scale-110 transition-transform">
+</a>
+
+<!-- Botón modo oscuro -->
+<button id="toggleDark" class="fixed top-4 right-4 z-50 p-2 rounded-full bg-white dark:bg-gray-800 border shadow">
+  <span id="sunmoon">🌙</span>
+</button>
+
+<header class="text-center py-6">
+  <h1 class="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400">
+    Asesor IA de Lentes
+  </h1>
+</header>
+
+<!-- Layout principal -->
+<main class="max-w-7xl mx-auto px-4 md:flex md:gap-6">
+  <!-- Columna izquierda -->
+  <div class="md:w-1/2 flex flex-col items-center">
+    <div class="relative w-full max-w-md">
+      <video id="video" class="rounded-xl shadow w-full" autoplay muted playsinline></video>
+      <canvas id="overlay" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+    </div>
+    <p id="rostroInfo" class="mt-3 font-medium text-center text-blue-600 dark:text-blue-300"></p>
+
+    <!-- Formulario -->
+    <div class="w-full mt-4 bg-gray-100 dark:bg-gray-800 p-4 rounded-xl shadow text-sm">
+      <div class="grid grid-cols-2 gap-2">
+        <div class="relative">
+          <select id="genero" class="appearance-none w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="" disabled selected hidden>Selecciona género</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+            ▼
+          </div>
+        </div>
+        <div class="relative">
+          <select id="actividad" class="appearance-none w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="" disabled selected hidden>Selecciona actividad</option>
+            <option value="Estudiante">Estudiante</option>
+            <option value="Oficina">Oficina / Administrativo</option>
+            <option value="Conducción">Conducción / Transporte</option>
+            <option value="Deporte">Deporte al aire libre</option>
+            <option value="Tecnología">Tecnología / Informática</option>
+            <option value="Salud">Salud / Sanitario</option>
+            <option value="Docencia">Docencia</option>
+            <option value="Arte">Arte / Diseño</option>
+            <option value="Industria">Industria / Construcción</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+            ▼
+          </div>
+        </div>
+      </div>
+
+      <div id="spinner" class="flex justify-center my-4 hidden">
+        <svg class="animate-spin h-8 w-8 text-blue-600 dark:text-blue-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+        </svg>
+      </div>
+
+      <button id="btnRecomendar" disabled
+              class="w-full mt-3 py-2 text-white font-semibold rounded-lg text-sm bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition">
+        Recomendaciones según tu rostro
+      </button>
+    </div>
+  </div>
+
+  <!-- Columna derecha -->
+  <div class="md:w-1/2 mt-8 md:mt-0">
+    <!-- Carrusel Swiper (solo desktop) -->
+    <section id="gridGafas" class="hidden md:block">
+      <div class="swiper">
+        <div class="swiper-wrapper">
+          <!-- Tarjetas dinámicas -->
+        </div>
+        <!-- Flechas navegación -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+      </div>
+    </section>
+    <!-- Grid fallback para móviles -->
+    <section id="gridGafasMobile" class="grid grid-cols-1 gap-4 px-2 auto-rows-fr md:hidden">
+      <!-- Tarjetas dinámicas -->
+    </section>
+  </div>
+</main>
+
+<!-- Modal Jeeliz -->
+<div id="tryonModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+  <div class="bg-white dark:bg-gray-900 p-4 rounded-lg w-full max-w-4xl relative">
+    <button id="cerrarTryon" class="absolute top-2 right-2 text-2xl font-bold text-gray-600 dark:text-gray-300">&times;</button>
+    <h2 class="text-xl font-bold text-center text-blue-600 dark:text-blue-300 mb-3">Vista previa virtual</h2>
+    <div id="JeelizVTOWidget" class="w-full h-[500px] rounded-xl overflow-hidden bg-black"></div>
+  </div>
+</div>
+</body>
+</html>

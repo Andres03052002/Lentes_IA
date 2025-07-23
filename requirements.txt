@@ -1,0 +1,12 @@
+Flask
+Flask-SocketIO
+PyMySQL
+python-dotenv
+pandas
+joblib
+numpy
+gunicorn
+scikit-learn
+mysql-connector-python
+matplotlib
+seaborn 

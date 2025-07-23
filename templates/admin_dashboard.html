@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Lentes IA</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        line-height: 1.6;
+      }
+      h1, h2 {
+        letter-spacing: 0.02em;
+      }
+    </style>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-gray-100">
+    <div class="p-6">
+        <div class="border-b pb-4 mb-6 flex justify-between items-center">
+            <h1 class="text-4xl font-extrabold text-indigo-500 tracking-wide">Lentes IA - Dashboard</h1>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold shadow-md transition-all duration-300">
+              Cerrar Sesión
+            </a>
+        </div>
+
+        <div class="mb-6">
+          <button onclick="reentrenarModelo()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md font-semibold shadow-md transition duration-300">
+            Reentrenar Modelo
+          </button>
+          <p id="reentrenarStatus" class="text-sm mt-2 text-green-400 font-semibold hidden">Modelo actualizado</p>
+        </div>
+
+        <!-- Métricas principales -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow p-5 hover:shadow-xl transition">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Accuracy</p>
+                <p id="accuracy" class="text-3xl font-semibold text-blue-600 dark:text-blue-400">0%</p>
+            </div>
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow p-5 hover:shadow-xl transition">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Precision</p>
+                <p id="precision" class="text-3xl font-semibold text-green-600 dark:text-green-400">0%</p>
+            </div>
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow p-5 hover:shadow-xl transition">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Recall</p>
+                <p id="recall" class="text-3xl font-semibold text-yellow-600 dark:text-yellow-400">0%</p>
+            </div>
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow p-5 hover:shadow-xl transition">
+                <p class="text-sm text-gray-500 dark:text-gray-400">F1 Score</p>
+                <p id="f1" class="text-3xl font-semibold text-purple-600 dark:text-purple-400">0%</p>
+            </div>
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow p-5 hover:shadow-xl transition">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Likes</p>
+                <p id="likes" class="text-3xl font-semibold text-green-700 dark:text-green-300">0</p>
+            </div>
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow p-5 hover:shadow-xl transition">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Dislikes</p>
+                <p id="dislikes" class="text-3xl font-semibold text-red-600 dark:text-red-400">0</p>
+            </div>
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow p-5 hover:shadow-xl transition">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Intención de compra</p>
+                <p id="compras" class="text-3xl font-semibold text-indigo-600 dark:text-indigo-300">0</p>
+            </div>
+        </div>
+
+        <!-- Paneles de análisis -->
+        <div class="my-8">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">Análisis de Usuarios</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                    <h3 class="text-lg font-semibold mb-3">Usuarios por Género</h3>
+                    <canvas id="usuariosGeneroChart"></canvas>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                    <h3 class="text-lg font-semibold mb-3">Usuarios por Tipo de Rostro</h3>
+                    <canvas id="usuariosRostroChart"></canvas>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                    <h3 class="text-lg font-semibold mb-3">Acciones de los Usuarios</h3>
+                    <canvas id="accionesUsuariosChart"></canvas>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                    <h3 class="text-lg font-semibold mb-3">Top 5 Modelos con Intención de Compra</h3>
+                    <canvas id="topComprasChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paneles técnicos -->
+        <div class="my-8">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">Rendimiento del Modelo</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                    <h3 class="text-lg font-semibold mb-3">Matriz de Confusión</h3>
+                    <canvas id="confusionMatrixChart" class="w-full h-auto"></canvas>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+                    <h3 class="text-lg font-semibold mb-3">Importancia de Características</h3>
+                    <canvas id="featureImportanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        socket.on('update_dashboard', () => {
+            console.log('📡 Actualización recibida');
+            cargarDatos();
+        });
+
+        let confusionChart, featureChart;
+
+        function cargarDatos() {
+            axios.get('/api/model-metrics')
+                .then(res => {
+                    const m = res.data;
+
+                    document.getElementById('accuracy').innerText = (m.accuracy * 100).toFixed(2) + "%";
+                    document.getElementById('precision').innerText = (m.precision * 100).toFixed(2) + "%";
+                    document.getElementById('recall').innerText = (m.recall * 100).toFixed(2) + "%";
+                    document.getElementById('f1').innerText = (m.f1 * 100).toFixed(2) + "%";
+                    document.getElementById('likes').innerText = m.total_likes ?? 0;
+                    document.getElementById('dislikes').innerText = m.total_dislikes ?? 0;
+                    document.getElementById('compras').innerText = m.total_compras ?? 0;
+
+                    actualizarGraficos(m);
+                })
+                .catch(err => console.error("❌ Error cargando métricas:", err));
+        }
+
+        function actualizarGraficos(m) {
+            // Usuarios por género
+            const generoLabels = m.genero_data.map(g => g.genero);
+            const generoValues = m.genero_data.map(g => g.total);
+            new Chart(document.getElementById('usuariosGeneroChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: generoLabels,
+                    datasets: [{
+                        data: generoValues,
+                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B']
+                    }]
+                }
+            });
+
+            // Usuarios por tipo de rostro
+            const rostroLabels = m.rostro_data.map(r => r.tipo_rostro);
+            const rostroValues = m.rostro_data.map(r => r.total);
+            new Chart(document.getElementById('usuariosRostroChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: rostroLabels,
+                    datasets: [{
+                        label: 'Usuarios',
+                        data: rostroValues,
+                        backgroundColor: '#6366F1'
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+
+            // Acciones de los usuarios
+            const accionesLabels = m.acciones_data.map(a => a.accion);
+            const accionesValues = m.acciones_data.map(a => a.total);
+            new Chart(document.getElementById('accionesUsuariosChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: accionesLabels,
+                    datasets: [{
+                        label: 'Cantidad',
+                        data: accionesValues,
+                        backgroundColor: '#EC4899'
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+
+            // Top 5 modelos con intención de compra
+            const topComprasLabels = m.top_compras.map(t => t.nombre);
+            const topComprasValues = m.top_compras.map(t => t.total);
+            new Chart(document.getElementById('topComprasChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: topComprasLabels,
+                    datasets: [{
+                        label: 'Intenciones de compra',
+                        data: topComprasValues,
+                        backgroundColor: '#F59E0B'
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+
+            const ctx1 = document.getElementById('confusionMatrixChart').getContext('2d');
+            const ctx2 = document.getElementById('featureImportanceChart').getContext('2d');
+
+            if (confusionChart) confusionChart.destroy();
+            if (featureChart) featureChart.destroy();
+
+            const labels = m.confusion_matrix.labels;
+            const matrix = m.confusion_matrix.matrix;
+            const maxVal = Math.max(...matrix.flat());
+
+            // Matriz de Confusión interactiva tipo Matplotlib
+            confusionChart = new Chart(ctx1, {
+                type: 'matrix',
+                data: {
+                    datasets: [{
+                        label: 'Confusion Matrix',
+                        data: matrix.flatMap((row, i) =>
+                            row.map((value, j) => ({
+                                x: labels[j],
+                                y: labels[i],
+                                v: value
+                            }))
+                        ),
+                        backgroundColor(context) {
+                            const value = context.raw.v / maxVal; // normalizar
+                            return chroma.scale('viridis')(value).hex();
+                        },
+                        borderColor: 'rgba(0,0,0,0.3)',
+                        borderWidth: 1,
+                        width: ({ chart }) => (chart.chartArea || {}).width / labels.length - 1,
+                        height: ({ chart }) => (chart.chartArea || {}).height / labels.length - 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => `Predicho: ${items[0].raw.x}`,
+                                label: (item) => `Verdadero: ${item.raw.y}, Valor: ${item.raw.v}`
+                            }
+                        },
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: '',
+                            font: { size: 16 }
+                        },
+                        datalabels: {
+                            color: 'white',
+                            formatter: (value) => value.v > 0 ? value.v : '',
+                            font: { weight: 'bold', size: 14 }
+                        }
+                    },
+                    scales: {
+                        x: { type: 'category', labels: labels, title: { display: true, text: 'Predicted label' } },
+                        y: { type: 'category', labels: labels, title: { display: true, text: 'True label' } }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+
+            // Feature Importance
+            featureChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: m.feature_importances.features,
+                    datasets: [{
+                        label: "Importancia",
+                        data: m.feature_importances.importances,
+                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B']
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarDatos);
+
+        function reentrenarModelo() {
+            document.getElementById('reentrenarStatus').classList.add('hidden');
+            axios.post('/api/reentrenar')
+                .then(() => {
+                    alert('✅ Modelo reentrenado con éxito');
+                    document.getElementById('reentrenarStatus').classList.remove('hidden');
+                    cargarDatos(); // actualiza dashboard
+                })
+                .catch(err => {
+                    console.error("❌ Error reentrenando:", err);
+                    alert("❌ Error al reentrenar el modelo");
+                });
+        }
+    </script>
+</body>
+</html>

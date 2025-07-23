@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" class="dark"class="h-full transition duration-500 dark:bg-gray-900 bg-gray-100">
+<head>
+  <meta charset="UTF-8">
+  <title>Test de Daltonismo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+</head>
+<body class="min-h-full flex items-center justify-center transition duration-500 text-gray-800 dark:text-gray-100 bg-gray-100 dark:bg-gray-900">
+
+<a href="/" class="fixed top-4 left-4 z-50 p-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm transition-all group">
+  <img src="{{ url_for('static', filename='img/home-icon.jpg') }}" 
+       alt="Inicio" 
+       class="w-6 h-6 object-contain group-hover:scale-110 transition-transform">
+</a>  
+
+  <!-- Botón modo oscuro -->
+  <div class="fixed top-4 right-4 z-50">
+    <button id="toggleDarkMode" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full p-2 shadow-lg transition">
+      <span id="icon" class="text-gray-800 dark:text-yellow-300">🌙</span>
+    </button>
+  </div>
+
+  <!-- Contenedor principal -->
+  <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 mx-4 transition space-y-6">
+    <h1 class="text-2xl font-bold text-center text-blue-600 dark:text-blue-400">Test de Daltonismo</h1>
+    <p class="text-center text-gray-600 dark:text-gray-300 mb-4">Selecciona el número que ves en cada imagen.</p>
+
+    <form id="formulario-test" class="space-y-8">
+      <!-- Preguntas generadas dinámicamente -->
+      <div id="test-container" class="space-y-8"></div>
+
+      <div class="text-center pt-2">
+        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition">Evaluar Respuestas</button>
+      </div>
+    </form>
+
+    <div id="resultado" class="hidden mt-4 bg-blue-100 dark:bg-blue-900 p-4 rounded-xl shadow text-sm space-y-2"></div>
+
+    <div class="text-center pt-4">
+      <a href="/" class="text-blue-600 dark:text-blue-300 underline">← Volver al Inicio</a>
+    </div>
+  </div>
+
+  <script>
+    const preguntas = [
+  { img: "static/ishihara/Ishihara_00.jpg", opciones: ["12", "8", "3"], correcta: "12" },
+  { img: "static/ishihara/Ishihara_01.jpg", opciones: ["74", "21", "00"], correcta: "74" },
+  { img: "static/ishihara/Ishihara_02.jpg", opciones: ["6", "5", "9"], correcta: "6" },
+  { img: "static/ishihara/Ishihara_70.jpg", opciones: ["29", "70", "00"], correcta: "29" },
+  { img: "static/ishihara/Ishihara_04.jpg", opciones: ["2", "16", "45"], correcta: "2" }
+];
+
+    const usuario = Array(preguntas.length).fill(null);
+    const testContainer = document.getElementById("test-container");
+
+    preguntas.forEach((q, idx) => {
+      const div = document.createElement("div");
+      div.className = "space-y-3 text-center";
+
+      const titulo = document.createElement("h3");
+      titulo.className = "font-medium";
+      titulo.textContent = `¿Qué número ves?`;
+      div.appendChild(titulo);
+
+      const img = document.createElement("img");
+      img.src = q.img;
+      img.alt = `Ishihara ${idx}`;
+      img.className = "mx-auto max-w-[200px] rounded-xl shadow";
+      div.appendChild(img);
+
+      const opcionesDiv = document.createElement("div");
+      opcionesDiv.className = "flex justify-center gap-4 flex-wrap";
+
+      q.opciones.forEach(opcion => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = opcion;
+        btn.className = "option-btn w-14 h-14 text-white text-lg font-bold rounded-full bg-blue-600 hover:bg-blue-700 transition";
+        btn.addEventListener("click", () => {
+          usuario[idx] = opcion;
+          opcionesDiv.querySelectorAll("button").forEach(b => b.classList.remove("bg-green-600"));
+          btn.classList.add("bg-green-600");
+        });
+        opcionesDiv.appendChild(btn);
+      });
+
+      div.appendChild(opcionesDiv);
+      testContainer.appendChild(div);
+    });
+
+    // Resultado
+    document.getElementById("formulario-test").addEventListener("submit", e => {
+      e.preventDefault();
+      const resultado = document.getElementById("resultado");
+      resultado.innerHTML = '';
+      resultado.classList.remove("hidden");
+
+      let fallos = 0;
+      preguntas.forEach((q, i) => {
+        const user = usuario[i] || "(sin respuesta)";
+        const esCorrecta = user === q.correcta;
+        const p = document.createElement("p");
+        p.innerHTML = `<strong>Placa ${i + 1}:</strong> dijiste <strong>${user}</strong>. Correcta: <strong>${q.correcta}</strong> ${esCorrecta ? '✅' : '❌'}`;
+        resultado.appendChild(p);
+        if (!esCorrecta) fallos++;
+      });
+
+      const resumen = document.createElement("p");
+      resumen.className = "pt-2 font-semibold";
+      resumen.innerHTML = fallos >= 3
+        ? '🔴 Podrías tener deficiencia en la visión del color. Consulta con un especialista.'
+        : '🟢 Tu visión del color parece estar dentro de los rangos normales.';
+      resultado.appendChild(resumen);
+
+      resultado.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Modo oscuro toggle
+    const toggleBtn = document.getElementById('toggleDarkMode');
+    const html = document.documentElement;
+    const icon = document.getElementById('icon');
+    toggleBtn.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      icon.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>
